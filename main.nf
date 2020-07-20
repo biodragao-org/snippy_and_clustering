@@ -6,6 +6,8 @@ params
 ################
 */
 
+// TODO use flags to execute the script from inside/outside the vm
+
 ch_refFILE = Channel.value("$baseDir/refFILE")
 
 inputUntrimmedRawFilePattern = "./*_{R1,R2}.fastq.gz"
