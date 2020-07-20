@@ -6,39 +6,52 @@ params
 ################
 */
 
-// TODO use flags to execute the script from inside/outside the vm
+params.trimmed= true
+params.saveBy= 'copy'
+params.cpus= 4
 
-ch_refFILE = Channel.value("$baseDir/refFILE")
+params.refGbk = "NC000962_3.gbk"
 
 inputUntrimmedRawFilePattern = "./*_{R1,R2}.fastq.gz"
-
 inputTrimmedRawFilePattern = "./*_{R1,R2}.p.fastq.gz"
 
 inputRawFilePattern = params.trimmed ? inputTrimmedRawFilePattern : inputUntrimmedRawFilePattern
 
-
 Channel.fromFilePairs(inputRawFilePattern)
-        .into {  ch_in_PROCESS }
+        .set { ch_in_snippy }
 
+Channel.value("$workflow.launchDir/NC000962_3.gbk")
+       .set {ch_refGbk}
 
+/*
+###############
+snippy_command
+###############
+*/
 
-process PROCESS {
-#    publishDir 'results/PROCESS'
-#    container 'PROCESS_CONTAINER'
+process snippy {
+//    container 'ummidock/snippy_tseemann:4.6.0-02'
+    publishDir 'results/snippy', mode: params.saveBy
+    stageInMode 'copy'
+//    errorStrategy 'ignore'
 
 
     input:
-    set genomeFileName, file(genomeReads) from ch_in_PROCESS
+    path refGbk from ch_refGbk
+    set genomeFileName, file(genomeReads) from ch_in_snippy
 
     output:
-    path("""${PROCESS_OUTPUT}""") into ch_out_PROCESS
-
+    path("""${genomeName}""") into ch_out_snippy
 
     script:
-    #FIXME
     genomeName= genomeFileName.toString().split("\\_")[0]
+
+    """
+
+    snippy --cpus ${params.cpus}  --outdir $genomeName --ref $refGbk --R1 ${genomeReads[0]} --R2 ${genomeReads[1]}
+    """
     
-    """
-    CLI PROCESS
-    """
 }
+
+// alternative container 
+// container 'quay.io/biocontainers/snippy:4.6.0--0'
