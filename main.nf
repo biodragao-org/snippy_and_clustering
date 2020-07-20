@@ -30,10 +30,10 @@ snippy_command
 */
 
 process snippy {
-//    container 'ummidock/snippy_tseemann:4.6.0-02'
+    container 'abhi18av/snippy_and_mtb_clustering_scripts_docker'
     publishDir 'results/snippy', mode: params.saveBy
     stageInMode 'copy'
-//    errorStrategy 'ignore'
+    errorStrategy 'ignore'
 
 
     input:
